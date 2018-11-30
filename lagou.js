@@ -1,4 +1,5 @@
 const { Builder, By, Key, until } = require('selenium-webdriver');
+const lagou = require('./db/lagou.js')
 // const { Options } = require('selenium-webdriver/chrome');
 
 // const options = new Options()
@@ -8,7 +9,7 @@ const { Builder, By, Key, until } = require('selenium-webdriver');
 // .setChromeOptions(options)
 
 let currentPageNum = 1;
-let maxPageNum = 5;
+let maxPageNum = 10;
 const url = 'https://www.lagou.com/jobs/list_%E5%89%8D%E7%AB%AF?city=%E5%85%A8%E5%9B%BD&cl=false&fromSearch=true&labelWords=&suginput='
 let driver = new Builder().forBrowser('chrome').build();
 
@@ -28,7 +29,7 @@ async function getData() {
       let results = []
       for (let i = 0; i < els.length; i++) {
         let el = els[i]
-        let id = await el.getAttribute('data-companyid')
+        let companyId = await el.getAttribute('data-companyid')
         let job = await el.findElement(By.tagName('h3')).getText()
         let area = await el.findElement(By.tagName('em')).getText()
         let money = await el.findElement(By.className('money')).getText()
@@ -36,20 +37,22 @@ async function getData() {
         let need = await el.findElement(By.css('.p_bot .li_b_l')).getText()
         let companyLink = await el.findElement(By.css('.company_name>a')).getAttribute('href')
         let companyName = await el.findElement(By.css('.company_name>a')).getText()
+        let companyIcon = await el.findElement(By.css('.com_logo img')).getAttribute('src')
         let industry = await el.findElement(By.className('industry')).getText()
         let tags = await el.findElement(By.css('.list_item_bot .li_b_l')).getText()
         let welfare = await el.findElement(By.css('.list_item_bot .li_b_r')).getText()
         need = need.replace(/\d+k-\d+k/, '')
         // console.log(id, job, area, money, link, need, companyLink, industry, tags, welfare)
         results.push({
-          id,
+          companyId,
           job,
           area,
-          money,
           link,
-          need,
-          companyLink,
+          money,
           companyName,
+          companyLink,
+          companyIcon,
+          need,
           industry,
           tags,
           welfare,
@@ -57,6 +60,10 @@ async function getData() {
       }
 
       console.log(results)
+
+      results.forEach(data => {
+        lagou.addData(data)
+      })
 
       currentPageNum++
       if (currentPageNum <= maxPageNum) {
@@ -66,7 +73,9 @@ async function getData() {
         // driver.executeScript(`window.open('${url}')`)
       }
     } catch (e) {
-      flag = false
+      if (e) {
+        flag = false
+      }
     } finally {
       if (flag) {
         break
