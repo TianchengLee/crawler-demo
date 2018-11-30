@@ -1,7 +1,11 @@
 const { Builder, By, Key, until } = require('selenium-webdriver')
+const path = require('path')
+const https = require('https')
+const fs = require('fs')
+const download = require('download')
 
 let currentPageNum = 1
-let maxPage = 5
+let maxPage = 1
 let url = 'https://www.haha.mx/pic/new/'
 let driver = new Builder().forBrowser('chrome').build()
 let imgUrls = []
@@ -11,6 +15,7 @@ start()
 async function start() {
   await getData()
   console.log(imgUrls)
+  downloadImg()
 }
 
 async function getData() {
@@ -26,4 +31,10 @@ async function getData() {
   if (currentPageNum <= maxPage) {
     await getData()
   }
+}
+
+function downloadImg() {
+  imgUrls.forEach(img => {
+    download(img, 'pics')
+  })
 }
