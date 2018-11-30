@@ -1,11 +1,8 @@
 const { Builder, By, Key, until } = require('selenium-webdriver')
-const path = require('path')
-const https = require('https')
-const fs = require('fs')
 const download = require('download')
 
 let currentPageNum = 1
-let maxPage = 1
+let maxPage = 2
 let url = 'https://www.haha.mx/pic/new/'
 let driver = new Builder().forBrowser('chrome').build()
 let imgUrls = []
@@ -34,7 +31,7 @@ async function getData() {
 }
 
 function downloadImg() {
-  imgUrls.forEach(img => {
-    download(img, 'pics')
-  })
+  Promise.all(imgUrls.map(x => download(x, 'pics'))).then(() => {
+    console.log('files downloaded!');
+  });
 }
